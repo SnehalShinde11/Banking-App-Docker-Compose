@@ -1,0 +1,45 @@
+services:
+
+  account-service:
+    build:
+      context: ./account-service
+    image: snehalshinde11/account-service:1.0
+    container_name: account-service
+
+    ports:
+      - "3000:3000"
+
+    networks:
+      - banking-network
+
+    depends_on:
+      - transaction-service
+
+
+  transaction-service:
+    build:
+      context: ./transaction-service
+    image: snehalshinde11/transaction-service:1.0
+    container_name: transaction-service
+
+    networks:
+      - banking-network
+
+
+  notification-service:
+    build:
+      context: ./notification-service
+    image: snehalshinde11/notification-service:1.0
+    container_name: notification-service
+
+    ports:
+      - "5000:5000"
+
+    networks:
+      - banking-network
+
+
+networks:
+
+  banking-network:
+    driver: bridge
