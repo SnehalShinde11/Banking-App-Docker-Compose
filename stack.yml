@@ -1,0 +1,91 @@
+version: "3.8"
+
+services:
+
+  # =========================
+  # Account Service
+  # =========================
+  account-service:
+    image: snehalshinde11/account-service:1.0
+
+    ports:
+      - "3000:3000"
+
+    networks:
+      - banking-overlay
+
+    deploy:
+      replicas: 2
+
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 30s
+
+
+  # =========================
+  # Transaction Service
+  # =========================
+  transaction-service:
+    image: snehalshinde11/transaction-service:1.0
+
+    # No ports exposed
+    # This service is accessible internally
+    # through the overlay network.
+
+    networks:
+      - banking-overlay
+
+    deploy:
+      replicas: 3
+
+      # Rolling Update Strategy
+      update_config:
+        parallelism: 1
+        delay: 15s
+        order: start-first
+        failure_action: rollback
+
+      # Rollback Strategy
+      rollback_config:
+        parallelism: 1
+        delay: 10s
+        order: start-first
+
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+
+
+  # =========================
+  # Notification Service
+  # =========================
+  notification-service:
+    image: snehalshinde11/notification-service:1.0
+
+    ports:
+      - "5000:5000"
+
+    networks:
+      - banking-overlay
+
+    deploy:
+      replicas: 2
+
+      # Auto-Restart Policy
+      restart_policy:
+        condition: any
+        delay: 5s
+        max_attempts: 5
+        window: 30s
+
+
+# =========================
+# Overlay Network
+# =========================
+networks:
+  banking-overlay:
+    driver: overlay
+    attachable: true
