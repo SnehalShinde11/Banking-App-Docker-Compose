@@ -1,0 +1,26 @@
+apiVersion: networking.istio.io/v1
+kind: DestinationRule
+
+metadata:
+  name: circuit-breaker-test
+  namespace: banking
+
+spec:
+  host: circuit-breaker-test
+
+  trafficPolicy:
+
+    connectionPool:
+
+      tcp:
+        maxConnections: 1
+
+      http:
+        http1MaxPendingRequests: 1
+        maxRequestsPerConnection: 1
+
+    outlierDetection:
+      consecutive5xxErrors: 3
+      interval: 5s
+      baseEjectionTime: 30s
+      maxEjectionPercent: 100
