@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: notification-v2
+  namespace: banking
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: notification-service
+      version: v2
+
+  template:
+
+    metadata:
+      labels:
+        app: notification-service
+        version: v2
+
+    spec:
+
+      nodeSelector:
+        kubernetes.io/hostname: k8s-worker02
+
+      tolerations:
+
+        - key: notification
+          operator: Equal
+          value: "true"
+          effect: NoSchedule
+
+      containers:
+
+        - name: notification-service
+
+          image: snehalshinde11/notification-service:3.0
+
+          imagePullPolicy: Always
+
+          ports:
+            - containerPort: 5000
+
+          env:
+
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: banking-db-secret
+                  key: DB_USERNAME
+
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: banking-db-secret
+                  key: DB_PASSWORD
+
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 15
+            periodSeconds: 10
+
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 30
+            periodSeconds: 20
