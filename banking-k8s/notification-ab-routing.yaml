@@ -1,0 +1,39 @@
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+
+metadata:
+  name: notification-service
+  namespace: banking
+
+spec:
+  hosts:
+    - notification-service
+
+  http:
+
+    # A/B routing:
+    # Beta users always receive Notification v2
+    - match:
+        - headers:
+            x-user-type:
+              exact: beta
+
+      route:
+        - destination:
+            host: notification-service
+            subset: v2
+          weight: 100
+
+    # Default canary:
+    # Normal users receive 90% v1 and 10% v2
+    - route:
+
+        - destination:
+            host: notification-service
+            subset: v1
+          weight: 90
+
+        - destination:
+            host: notification-service
+            subset: v2
+          weight: 10
