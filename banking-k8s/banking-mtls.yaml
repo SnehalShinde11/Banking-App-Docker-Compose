@@ -1,0 +1,8 @@
+apiVersion: security.istio.io/v1
+kind: PeerAuthentication
+metadata:
+  name: banking-mtls
+  namespace: banking
+spec:
+  mtls:
+    mode: STRICT
