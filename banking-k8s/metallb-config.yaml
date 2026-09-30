@@ -1,0 +1,17 @@
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: banking-pool
+  namespace: metallb-system
+spec:
+  addresses:
+    - 10.128.0.240-10.128.0.250
+---
+apiVersion: metallb.io/v1beta1
+kind: L2Advertisement
+metadata:
+  name: banking-l2
+  namespace: metallb-system
+spec:
+  ipAddressPools:
+    - banking-pool
