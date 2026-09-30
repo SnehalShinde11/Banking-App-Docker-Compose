@@ -1,0 +1,52 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fluentd-config
+  namespace: logging
+data:
+  fluent.conf: |
+    <source>
+      @type tail
+      @id in_tail_container_logs
+
+      path /var/log/containers/*.log
+      pos_file /var/log/fluentd-containers.log.pos
+
+      tag kubernetes.*
+      read_from_head true
+      follow_inodes true
+      rotate_wait 5s
+
+      <parse>
+        @type cri
+      </parse>
+    </source>
+
+    <filter kubernetes.**>
+      @type kubernetes_metadata
+    </filter>
+
+    <match kubernetes.**>
+      @type elasticsearch
+
+      host elasticsearch.logging.svc.cluster.local
+      port 9200
+
+      logstash_format true
+      logstash_prefix kubernetes
+      logstash_dateformat %Y.%m.%d
+
+      include_tag_key true
+      tag_key @log_name
+
+      reconnect_on_error true
+      reload_on_failure true
+
+      <buffer>
+        @type file
+        path /var/log/fluentd-buffers
+
+        flush_interval 5s
+        retry_forever true
+      </buffer>
+    </match>
